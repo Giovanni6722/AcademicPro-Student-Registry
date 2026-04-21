@@ -57,18 +57,18 @@ MY TOUCH:
 
 PDF VIEWER EXTRA CREDIT
 
-A pdf Viewer was implemented useing the iText5 library (```com.itextpdf:itextpdf:5.5.13.3```) as a Maven dependency.
-iText is an unnamed module on the classpath so it canot be directly imported without breaking the module system.
-This was solved by accessing classes entirly though Java reflection in ```DbConnectivityClass.generatePDFReport()```.
-The ```pom.xml``` includes ```--add-reads com.example.csc311_bd_ui-semesterlongproject=ALL-UNNAMED``` so the app
-module can read classpath libraries at runtime.
-The report includes a title, generation date, a summary, and a student listing.
-It's triggered by going to Data -> Gnerate PDF Report...
-This opens a ```File chooser``` save dialogue so the user can name and place the file
+- A pdf Viewer was implemented useing the iText5 library (```com.itextpdf:itextpdf:5.5.13.3```) as a Maven dependency.
+- iText is an unnamed module on the classpath so it canot be directly imported without breaking the module system.
+- This was solved by accessing classes entirly though Java reflection in ```DbConnectivityClass.generatePDFReport()```.
+- The ```pom.xml``` includes ```--add-reads com.example.csc311_bd_ui-semesterlongproject=ALL-UNNAMED``` so the app
+  module can read classpath libraries at runtime.
+- The report includes a title, generation date, a summary, and a student listing.
+- It's triggered by going to Data -> Gnerate PDF Report...
+- This opens a ```File chooser``` save dialogue so the user can name and place the file
 
 INLINE TABLE ROW EDITING EXTRA CREDIT
-Double Clock any cell in the First name, last name, email, or department colums to edit it directly
-```tv.setEditable(true)``` enables edit mode on ```TableView```.
-```TextFeildTableCell.forTableColumn()``` is applied as the cell facoty for each editabe collumn
-Every collumns ```setOnEditCommit``` handler calidates the new value against the same regext patterns used by the form
-If validation passes the ```Person``` object is updated and ```cnUtil.editUser()``` persusts. A status bat message cornfirms the result.
+- Double Clock any cell in the First name, last name, email, or department colums to edit it directly
+- ```tv.setEditable(true)``` enables edit mode on ```TableView```.
+- ```TextFeildTableCell.forTableColumn()``` is applied as the cell facoty for each editabe collumn
+- Every collumns ```setOnEditCommit``` handler calidates the new value against the same regext patterns used by the form
+- If validation passes the ```Person``` object is updated and ```cnUtil.editUser()``` persusts. A status bat message cornfirms the result.
