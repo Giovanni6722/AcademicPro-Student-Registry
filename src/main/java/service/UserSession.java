@@ -1,66 +1,88 @@
 package service;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.prefs.Preferences;
 
+/**
+ * Thread-safe Singleton managing the active user session.
+ *
+ * Thread safety is achieved via double-checked locking (DCL) with a
+ * volatile instance field, preventing race conditions during first
+ * initialisation in multi-threaded JavaFX environments.
+ */
 public class UserSession {
 
-    private static UserSession instance;
+    // volatile guarantees visibility across threads without full synchronisation
+    private static volatile UserSession instance;
 
     private String userName;
-
     private String password;
     private String privileges;
 
     private UserSession(String userName, String password, String privileges) {
-        this.userName = userName;
-        this.password = password;
+        this.userName   = userName;
+        this.password   = password;
         this.privileges = privileges;
-        Preferences userPreferences = Preferences.userRoot();
-        userPreferences.put("USERNAME",userName);
-        userPreferences.put("PASSWORD",password);
-        userPreferences.put("PRIVILEGES",privileges);
+        persistToPreferences(userName, password, privileges);
     }
 
+    // ── Singleton access ────────────────────────────────────────────────────
 
-
-    public static UserSession getInstace(String userName,String password, String privileges) {
-        if(instance == null) {
-            instance = new UserSession(userName, password, privileges);
+    /**
+     * Returns the singleton, creating it (thread-safely) if needed.
+     */
+    public static UserSession getInstance(String userName, String password, String privileges) {
+        if (instance == null) {                         // first check (no lock)
+            synchronized (UserSession.class) {
+                if (instance == null) {                 // second check (with lock)
+                    instance = new UserSession(userName, password, privileges);
+                }
+            }
         }
         return instance;
     }
 
-    public static UserSession getInstace(String userName,String password) {
-        if(instance == null) {
-            instance = new UserSession(userName, password, "NONE");
+    public static UserSession getInstance(String userName, String password) {
+        return getInstance(userName, password, "NONE");
+    }
+
+    /**
+     * Destroys the current session (logout). Synchronised so concurrent
+     * logouts are safe.
+     */
+    public static synchronized void cleanInstance() {
+        if (instance != null) {
+            instance.cleanUserSession();
+            instance = null;
         }
-        return instance;
-    }
-    public String getUserName() {
-        return this.userName;
     }
 
-    public String getPassword() {
-        return this.password;
+    // ── Thread-safe getters ─────────────────────────────────────────────────
+
+    public synchronized String getUserName()   { return userName;   }
+    public synchronized String getPassword()   { return password;   }
+    public synchronized String getPrivileges() { return privileges; }
+
+    // ── Internal helpers ────────────────────────────────────────────────────
+
+    private static void persistToPreferences(String user, String pass, String priv) {
+        Preferences p = Preferences.userRoot();
+        p.put("USERNAME",   user);
+        p.put("PASSWORD",   pass);
+        p.put("PRIVILEGES", priv);
     }
 
-    public String getPrivileges() {
-        return this.privileges;
-    }
-
-    public void cleanUserSession() {
-        this.userName = "";// or null
-        this.password = "";
-        this.privileges = "";// or null
+    public synchronized void cleanUserSession() {
+        this.userName   = "";
+        this.password   = "";
+        this.privileges = "";
+        Preferences p = Preferences.userRoot();
+        p.remove("USERNAME");
+        p.remove("PASSWORD");
+        p.remove("PRIVILEGES");
     }
 
     @Override
     public String toString() {
-        return "UserSession{" +
-                "userName='" + this.userName + '\'' +
-                ", privileges=" + this.privileges +
-                '}';
+        return "UserSession{userName='" + userName + "', privileges='" + privileges + "'}";
     }
 }
